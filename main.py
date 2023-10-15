@@ -3,15 +3,17 @@ import json
 import pandas as pd
 import openai
 
-openai_api_key = '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'
-openai.api_key = openai_api_key
+from pathlib import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+openai.api_key = str(os.getenv('openai_api_key'))
 
 sdw2023_api_url = 'https://sdw-2023-prd.up.railway.app'
 
 df = pd.read_csv('SDW2023.csv')
-
 user_ids = df['UserID'].tolist()
-
 
 def generate_ai_news(user):
     completion = openai.ChatCompletion.create(
@@ -30,11 +32,9 @@ def generate_ai_news(user):
     return completion.choices[0].message.content.strip('\"')
 
 
-
 def get_user(id):
-    response = requests.get(f'{sdw2023_api_url}/users/{id}')
-    return response.json() if response.status_code == 200 else None
-
+  response = requests.get(f'{sdw2023_api_url}/users/{id}')
+  return response.json() if response.status_code == 200 else None
 
 users = [user for id in user_ids if (user := get_user(id)) is not None]
 print(json.dumps(users, indent=2))
